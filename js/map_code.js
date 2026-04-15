@@ -15,10 +15,9 @@ const map = L.map('map').setView([32.2226, -110.9747], 12);
 // ============================================
 
 // Tile layer provides the visual background
-// Without this, the map will be blank
-// L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-//   attribution: '&copy; OpenStreetMap contributors'
-// }).addTo(map);
+L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: '&copy; OpenStreetMap contributors'
+}).addTo(map);
 
 
 // ============================================
