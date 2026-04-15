@@ -4,37 +4,37 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!-- TODO: Add a title for your web map -->
+  <!-- Page title (shown in browser tab) -->
   <title>Tucson Web Map</title>
 
-  <!-- TODO: Add Leaflet CSS -->
-  <!-- Hint: Use the Leaflet CDN link -->
-  <link 
-    rel="stylesheet" 
+  <!-- Leaflet CSS (required for map styling) -->
+  <link
+    rel="stylesheet"
     href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
   />
 
-  <!-- TODO: Link your custom stylesheet -->
+  <!-- Custom CSS -->
   <link rel="stylesheet" href="css/styles.css">
-  
 </head>
 <body>
 
-  <!-- TODO: Add a heading for your map -->
-  <h2>Tucson Cycleways and Restaurants</h2>
+  <!-- Optional title/header -->
+  <div id="page-title">
+    <h1>Tucson Cycleways and Restaurants</h1>
+  </div>
 
-  <!-- TODO: Create a div for the map -->
-  <!-- Hint: id should be "map" -->
+  <!-- Map container (Leaflet targets this div by ID) -->
   <div id="map"></div>
 
-  <!-- TODO: Add Leaflet JavaScript -->
-  <!-- Hint: Use the Leaflet CDN script -->
-  <script 
-    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
-  </script>
+  <footer id="page-footer">
+  <p>Data: OpenStreetMap | Demo for GIST 604B</p>
+</footer>
 
-  <!-- TODO: Link your JavaScript file -->
-  <script src="js/map.js"></script>
-  
+  <!-- Leaflet JavaScript (must come BEFORE your JS file) -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <!-- Your custom JavaScript -->
+  <script src="js/map_code.js"></script>
+
 </body>
 </html>

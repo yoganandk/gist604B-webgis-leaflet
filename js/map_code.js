@@ -1,51 +1,63 @@
+// map_code.js
+// Loads OSM data and displays restaurants, cycleways, and city boundary using Leaflet
+
 // ============================================
 // Step 1: Initialize the map
 // ============================================
 
-// Create map centered on Tucson
+// Create a Leaflet map in the "map" div
+// setView([lat, lon], zoom)
 const map = L.map('map').setView([32.2226, -110.9747], 12);
-
 
 
 // ============================================
 // Step 2: Add a basemap
 // ============================================
 
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  attribution: '© OpenStreetMap contributors'
-}).addTo(map);
-
+// Tile layer provides the visual background
+// Without this, the map will be blank
+// L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+//   attribution: '&copy; OpenStreetMap contributors'
+// }).addTo(map);
 
 
 // ============================================
-// Step 3: Add zoom controls
+// Step 3: Add/Customize controls
 // ============================================
 
-// Move zoom control to top right
+// Move zoom buttons (default = topleft)
 map.zoomControl.setPosition('topright');
 
+// Add a scale bar
+L.control.scale().addTo(map);
 
 
 // ============================================
 // Step 4: Create layer groups
 // ============================================
 
-const polygonLayer = L.layerGroup().addTo(map);
+// Layer groups allow toggling layers on/off
 const lineLayer = L.layerGroup().addTo(map);
 const pointLayer = L.layerGroup().addTo(map);
+const polygonLayer = L.layerGroup().addTo(map);
 
+// UI control to toggle layers
+L.control.layers(null, {
+  'Restaurants': pointLayer,
+  'Cycleways': lineLayer,
+  'City of Tucson Boundary': polygonLayer
+}).addTo(map);
 
 
 // ============================================
-// Step 5: Load point GeoJSON + popups (Restaurants)
+// Step 5: Load point data (Restaurants)
 // ============================================
 
-let restaurantsGeoJSON;
-
-fetch('data/restaurants.geojson')
+fetch('data/osm_tucson_restaurants.geojson')
   .then(res => res.json())
-  .then(data => {
-    restaurantsGeoJSON = L.geoJSON(data, {
+  .then(data => {L.geoJSON(data, {
+
+      // Style points as circle markers
       pointToLayer: function(feature, latlng) {
         return L.circleMarker(latlng, {
           radius: 6,
@@ -55,124 +67,62 @@ fetch('data/restaurants.geojson')
           fillOpacity: 0.9
         });
       },
+
+      // Add popups
       onEachFeature: function(feature, layer) {
         const name = feature.properties.name || 'Restaurant';
-        const cuisine = feature.properties.cuisine || 'Unknown';
-        layer.bindPopup(`<strong>${name}</strong><br>Cuisine: ${cuisine}`);
+        layer.bindPopup(`<strong>${name}</strong>`);
       }
+
     }).addTo(pointLayer);
-  });
 
+  })
+  .catch(err => console.error('Error loading restaurants:', err));
 
 
 // ============================================
-// Step 6: Load line GeoJSON + popups (Cycleways)
+// Step 6: Load line data (Cycleways)
 // ============================================
 
-let cyclewaysGeoJSON;
-
-fetch('data/cycleways.geojson')
+fetch('data/osm_tucson_cycleways.geojson')
   .then(res => res.json())
-  .then(data => {
-    cyclewaysGeoJSON = L.geoJSON(data, {
+  .then(data => {L.geoJSON(data, {
+
+      // Style lines
       style: function(feature) {
         return {
           color: '#1b9e77',
           weight: 3
         };
       },
-      onEachFeature: function(feature, layer) {
-        const type = feature.properties.fclass || 'Cycleway';
-        layer.bindPopup(`<strong>${type}</strong>`);
-      }
     }).addTo(lineLayer);
-  });
 
+  })
+  .catch(err => console.error('Error loading cycleways:', err));
 
 
 // ============================================
-// Step 7: Load polygon GeoJSON + popups (Tucson boundary)
+// Step 7: Load polygon data (Boundary)
 // ============================================
 
-let tucsonGeoJSON;
-
-fetch('data/tucson.geojson')
+fetch('data/osm_tucson.geojson')
   .then(res => res.json())
   .then(data => {
-    tucsonGeoJSON = L.geoJSON(data, {
-      style: function(feature) {
-        return {
-          color: '#7570b3',
-          weight: 2,
-          fillOpacity: 0.1
-        };
-      },
-      onEachFeature: function(feature, layer) {
-        layer.bindPopup('<strong>Tucson Boundary</strong>');
-      }
-    }).addTo(polygonLayer);
 
-    // ============================================
-    // Step 9: Fit map to data (using polygon)
-    // ============================================
+    // Add polygon and immediately fit to its bounds
+    map.fitBounds(
+      L.geoJSON(data, {
+        style: function() {
+          return {
+            color: '#7570b3',
+            weight: 3,
+            fill: false
+          };
+        }
+      })
+      .addTo(polygonLayer)
+      .getBounds()
+    );
 
-    map.fitBounds(tucsonGeoJSON.getBounds());
-  });
-
-
-
-// ============================================
-// Step 8: Add attribute-based styling
-// ============================================
-
-// Example already applied in restaurants:
-// styling based on feature type (circleMarker, color)
-
-
-
-// ============================================
-// Step 10: Add layer control
-// ============================================
-
-L.control.layers(null, {
-  'Tucson Boundary': polygonLayer,
-  'Cycleways': lineLayer,
-  'Restaurants': pointLayer
-}).addTo(map);
-
-
-
-// ============================================
-// Step 11: Add simple interactivity (hover highlight)
-// ============================================
-
-function highlightFeature(e) {
-  const layer = e.target;
-  layer.setStyle({
-    weight: 4,
-    color: '#ffcc00'
-  });
-}
-
-function resetHighlight(e) {
-  cyclewaysGeoJSON.resetStyle(e.target);
-}
-
-// Apply hover interaction to cycleways
-function addHoverInteraction() {
-  if (cyclewaysGeoJSON) {
-    cyclewaysGeoJSON.eachLayer(function(layer) {
-      layer.on({
-        mouseover: highlightFeature,
-        mouseout: resetHighlight
-      });
-    });
-  }
-}
-
-// Wait a moment to ensure data is loaded
-setTimeout(addHoverInteraction, 1000);
-
-
-
-console.log('map.js loaded - ready to go');
+  })
+  .catch(err => console.error('Error loading boundary:', err));
